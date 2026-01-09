@@ -1,0 +1,7 @@
+cd /opt/stock-monitor/web
+
+# 生成/补齐 go.sum
+docker run --rm -v "$PWD":/app -w /app golang:1.22 bash -lc "go mod tidy"
+
+# 看看是否生成了 go.sum
+ls -l go.sum
