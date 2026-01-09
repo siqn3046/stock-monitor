@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Dashboard</title></head>
+<body style="font-family:system-ui;max-width:980px;margin:30px auto;">
+  <div style="display:flex;gap:12px;align-items:center;">
+    <h2 style="margin:0;">监控列表</h2>
+    <a href="/telegram">Telegram 设置</a>
+    <a href="/logout">退出</a>
+  </div>
+
+  <h3>添加监控</h3>
+  <form method="post" action="/watch/add" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <input name="url" placeholder="监控网址 URL" style="grid-column:1/3;">
+    <input name="model" placeholder="型号/关键字（例如 JP2-CO-Micro）" style="grid-column:1/3;">
+    <input name="count_regex" placeholder="数量正则(可选) 例如: (\\d+)\\s+Available">
+    <input name="window" placeholder="截取窗口(默认2500)" value="2500">
+    <input name="instock_regex" placeholder="有货正则(可选) 例如: In Stock|Add to cart" style="grid-column:1/3;">
+    <input name="oos_regex" placeholder="无货正则(可选) 例如: Out of stock|Sold out|0\\s+Available" style="grid-column:1/3;">
+    <button style="grid-column:1/3;">提交</button>
+  </form>
+
+  <h3>当前监控项</h3>
+  <table border="1" cellspacing="0" cellpadding="6" style="width:100%;border-collapse:collapse;">
+    <tr>
+      <th>ID</th><th>URL</th><th>型号</th><th>最后状态</th><th>最后数量</th><th>最后检查</th><th>操作</th>
+    </tr>
+    {{range .Watches}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td style="word-break:break-all;">{{.URL}}</td>
+      <td>{{.Model}}</td>
+      <td>{{.LastStatus}}</td>
+      <td>{{if .LastAvailable.Valid}}{{.LastAvailable.Int64}}{{end}}</td>
+      <td>{{if .LastChecked.Valid}}{{.LastChecked.Int64}}{{end}}</td>
+      <td>
+        <form method="post" action="/watch/delete" style="margin:0;">
+          <input type="hidden" name="id" value="{{.ID}}">
+          <button onclick="return confirm('删除？')">删除</button>
+        </form>
+      </td>
+    </tr>
+    {{end}}
+  </table>
+
+  <p style="color:#666;">提示：last_checked 显示的是 Unix 时间戳（你要改成本地时间显示我也能给你加）。</p>
+</body>
+</html>
