@@ -1,47 +1,162 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Dashboard</title></head>
-<body style="font-family:system-ui;max-width:980px;margin:30px auto;">
-  <div style="display:flex;gap:12px;align-items:center;">
-    <h2 style="margin:0;">监控列表</h2>
-    <a href="/telegram">Telegram 设置</a>
-    <a href="/logout">退出</a>
-  </div>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>控制台 - Stock Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #0f172a; font-family: system-ui, -apple-system, sans-serif; padding-bottom: 50px; }
+        .navbar { background-color: #1e293b !important; border-bottom: 1px solid #334155; }
+        .card { background-color: #1e293b; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
+        .form-control { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
+        .form-control::placeholder { color: #64748b; }
+        .form-control:focus { background-color: #0f172a; border-color: #3b82f6; color: #fff; }
+        .table-custom { --bs-table-bg: transparent; --bs-table-color: #e2e8f0; --bs-table-border-color: #334155; }
+        td { vertical-align: middle; }
+        .url-col { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body>
 
-  <h3>添加监控</h3>
-  <form method="post" action="/watch/add" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-    <input name="url" placeholder="监控网址 URL" style="grid-column:1/3;">
-    <input name="model" placeholder="型号/关键字（例如 JP2-CO-Micro）" style="grid-column:1/3;">
-    <input name="count_regex" placeholder="数量正则(可选) 例如: (\\d+)\\s+Available">
-    <input name="window" placeholder="截取窗口(默认2500)" value="2500">
-    <input name="instock_regex" placeholder="有货正则(可选) 例如: In Stock|Add to cart" style="grid-column:1/3;">
-    <input name="oos_regex" placeholder="无货正则(可选) 例如: Out of stock|Sold out|0\\s+Available" style="grid-column:1/3;">
-    <button style="grid-column:1/3;">提交</button>
-  </form>
+<nav class="navbar navbar-expand-lg navbar-dark py-3 mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>Stock Monitor
+        </a>
+        <div class="d-flex gap-2">
+            <a href="/telegram" class="btn btn-outline-info btn-sm"><i class="bi bi-telegram"></i> Telegram 通知</a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> 退出</a>
+        </div>
+    </div>
+</nav>
 
-  <h3>当前监控项</h3>
-  <table border="1" cellspacing="0" cellpadding="6" style="width:100%;border-collapse:collapse;">
-    <tr>
-      <th>ID</th><th>URL</th><th>型号</th><th>最后状态</th><th>最后数量</th><th>最后检查</th><th>操作</th>
-    </tr>
-    {{range .Watches}}
-    <tr>
-      <td>{{.ID}}</td>
-      <td style="word-break:break-all;">{{.URL}}</td>
-      <td>{{.Model}}</td>
-      <td>{{.LastStatus}}</td>
-      <td>{{if .LastAvailable.Valid}}{{.LastAvailable.Int64}}{{end}}</td>
-      <td>{{if .LastChecked.Valid}}{{.LastChecked.Int64}}{{end}}</td>
-      <td>
-        <form method="post" action="/watch/delete" style="margin:0;">
-          <input type="hidden" name="id" value="{{.ID}}">
-          <button onclick="return confirm('删除？')">删除</button>
-        </form>
-      </td>
-    </tr>
-    {{end}}
-  </table>
+<div class="container">
+    
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>添加新监控</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="/watch/add" class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label text-secondary small">监控网址 URL</label>
+                    <input name="url" class="form-control" placeholder="https://..." required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">型号/关键字</label>
+                    <input name="model" class="form-control" placeholder="例如: RTX 4090" required>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">数量正则 (可选)</label>
+                    <input name="count_regex" class="form-control" placeholder="(\d+)\s+Available">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-secondary small">截取窗口 (字节)</label>
+                    <input name="window" class="form-control" placeholder="2500" value="2500">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-secondary small">有货正则 (可选)</label>
+                    <input name="instock_regex" class="form-control" placeholder="In Stock|Add to cart">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-secondary small">无货正则 (可选)</label>
+                    <input name="oos_regex" class="form-control" placeholder="Out of stock|Sold out">
+                </div>
+                
+                <div class="col-12 text-end">
+                    <button class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> 提交监控</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-  <p style="color:#666;">提示：last_checked 显示的是 Unix 时间戳（你要改成本地时间显示我也能给你加）。</p>
+    <div class="card">
+        <div class="card-header py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>当前监控项</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead class="bg-dark text-secondary">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>型号/关键字</th>
+                            <th>最后状态</th>
+                            <th>库存</th>
+                            <th>最后检查</th>
+                            <th class="text-end pe-4">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Watches}}
+                        <tr>
+                            <td class="ps-4 text-muted small">#{{.ID}}</td>
+                            <td>
+                                <div class="fw-bold">{{.Model}}</div>
+                                <div class="small text-muted url-col" title="{{.URL}}"><a href="{{.URL}}" target="_blank" class="text-decoration-none text-secondary"><i class="bi bi-link-45deg"></i> {{.URL}}</a></div>
+                            </td>
+                            <td>
+                                <span class="badge {{if eq .LastStatus "In Stock"}}bg-success{{else if eq .LastStatus "Out of Stock"}}bg-secondary{{else}}bg-warning text-dark{{end}}">
+                                    {{.LastStatus}}
+                                </span>
+                            </td>
+                            <td>
+                                {{if .LastAvailable.Valid}}
+                                    <span class="fw-bold text-info">{{.LastAvailable.Int64}}</span>
+                                {{else}}
+                                    <span class="text-muted">-</span>
+                                {{end}}
+                            </td>
+                            <td>
+                                {{if .LastChecked.Valid}}
+                                    <span class="unix-time text-secondary small" data-unix="{{.LastChecked.Int64}}">loading...</span>
+                                {{else}}
+                                    <span class="text-muted small">从未</span>
+                                {{end}}
+                            </td>
+                            <td class="text-end pe-4">
+                                <form method="post" action="/watch/delete" class="d-inline">
+                                    <input type="hidden" name="id" value="{{.ID}}">
+                                    <button onclick="return confirm('确定要删除吗？')" class="btn btn-link text-danger p-0" title="删除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{if not .Watches}}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                暂无监控项，请在上方添加
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 自动将 Unix 时间戳转换为本地时间
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.unix-time').forEach(function(el) {
+            const unix = el.getAttribute('data-unix');
+            if (unix && unix > 0) {
+                const date = new Date(unix * 1000);
+                // 格式化为 YYYY-MM-DD HH:MM:SS
+                el.textContent = date.toLocaleString('zh-CN', { hour12: false }); 
+            } else {
+                el.textContent = "-";
+            }
+        });
+    });
+</script>
 </body>
 </html>
