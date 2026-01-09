@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Telegram</title></head>
+<body style="font-family:system-ui;max-width:720px;margin:30px auto;">
+  <div style="display:flex;gap:12px;align-items:center;">
+    <h2 style="margin:0;">Telegram 设置</h2>
+    <a href="/">返回</a>
+  </div>
+
+  <form method="post" action="/telegram/save" style="display:grid;gap:10px;margin-top:16px;">
+    <label>Bot Token
+      <input name="tg_token" value="{{.Token}}" style="width:100%;">
+    </label>
+    <label>Chat ID
+      <input name="tg_chat_id" value="{{.Chat}}" style="width:100%;">
+    </label>
+    <button>保存</button>
+  </form>
+
+  <p style="color:#b00;">注意：这里为了简单直接存明文 Token。建议仅内网访问该面板，或反代加 HTTPS + BasicAuth。</p>
+</body>
+</html>
