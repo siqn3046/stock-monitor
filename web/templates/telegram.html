@@ -1,22 +1,61 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Telegram</title></head>
-<body style="font-family:system-ui;max-width:720px;margin:30px auto;">
-  <div style="display:flex;gap:12px;align-items:center;">
-    <h2 style="margin:0;">Telegram 设置</h2>
-    <a href="/">返回</a>
-  </div>
+<html lang="zh-CN" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Telegram 设置 - Stock Monitor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #0f172a; padding-top: 40px; }
+        .card { background-color: #1e293b; border: 1px solid #334155; max-width: 600px; margin: 0 auto; }
+        .form-control { background-color: #0f172a; border-color: #334155; color: #e2e8f0; }
+        .form-control:focus { background-color: #0f172a; border-color: #3b82f6; color: #fff; }
+    </style>
+</head>
+<body>
 
-  <form method="post" action="/telegram/save" style="display:grid;gap:10px;margin-top:16px;">
-    <label>Bot Token
-      <input name="tg_token" value="{{.Token}}" style="width:100%;">
-    </label>
-    <label>Chat ID
-      <input name="tg_chat_id" value="{{.Chat}}" style="width:100%;">
-    </label>
-    <button>保存</button>
-  </form>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-telegram text-info me-2"></i>Telegram 通知设置</h5>
+            <a href="/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            
+            <div class="alert alert-warning d-flex align-items-start" role="alert">
+                <i class="bi bi-shield-exclamation me-2 mt-1"></i>
+                <div class="small">
+                    注意：Token 将以明文存储。建议仅在内网环境访问此面板，或配置 Nginx 反向代理 + HTTPS + BasicAuth 进行保护。
+                </div>
+            </div>
 
-  <p style="color:#b00;">注意：这里为了简单直接存明文 Token。建议仅内网访问该面板，或反代加 HTTPS + BasicAuth。</p>
+            <form method="post" action="/telegram/save">
+                <div class="mb-4">
+                    <label class="form-label">Bot Token</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary">Token</span>
+                        <input name="tg_token" value="{{.Token}}" class="form-control font-monospace" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                    </div>
+                    <div class="form-text text-muted">从 @BotFather 获取的 API Token</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Chat ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary">ID</span>
+                        <input name="tg_chat_id" value="{{.Chat}}" class="form-control font-monospace" placeholder="-100123456789">
+                    </div>
+                    <div class="form-text text-muted">接收通知的用户 ID 或群组 ID</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary"><i class="bi bi-save me-2"></i>保存设置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
